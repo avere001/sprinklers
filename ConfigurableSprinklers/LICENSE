@@ -1,0 +1,5 @@
+﻿This mod uses Newtonsoft.Json which is licensed under the MIT license
+https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md
+
+Some code used in this project was adapted from stack overflow:
+	Yahoo Serious: https://stackoverflow.com/questions/2689566/how-to-add-xmlinclude-attribute-dynamically
