@@ -146,28 +146,40 @@ namespace ConfigurableSprinklers
         /// Convert <paramref name="objFrom"/> to type <typeparamref name="TObjTo"/>
         /// </summary>
         /// <remarks>
-        /// This code was adapted from https://stackoverflow.com/questions/8631898/c-sharp-inheritance-derived-class-from-base-class.
         /// </remarks>
-        /// <typeparam name="TObjTo">The type of the new object. Should have the same fields as <paramref name="objFrom"/></typeparam>
-        /// <param name="objFrom">The object from which to copy.</param>
-        /// <returns>A new instance of type <typeparamref name="TObjTo"/> that is a shallow copy of <paramref name="objFrom"/>.</returns>
-        private static TObjTo ConvertTo<TObjTo>(object objFrom) where TObjTo : StardewValley.Object, new()
+        /// <typeparam name="TObjTo">The type of the new object. Either <c>SprinklerObject</c> or <c>StardewValley.Object</c></typeparam>
+        /// <param name="objFrom">The object to be converted.</param>
+        /// <returns>A new instance of type <typeparamref name="TObjTo"/> that has the fields of <paramref name="objFrom"/>.</returns>
+        private static StardewValley.Object ConvertTo<TObjTo>(StardewValley.Object objFrom) where TObjTo : StardewValley.Object, new()
         {
-            Type t = typeof(StardewValley.Object);
+            Type tObject = typeof(StardewValley.Object);
+            Type[] validTypes = { tObject, typeof(SprinklerObject) };
 
+            // note: using "objFrom is TObjTo" would prevent converting SprinklerObject back to StardewValley.Object
             if (objFrom.GetType() == typeof(TObjTo))
             {
                 // No need to convert if it's already the right type
-                return (TObjTo) objFrom;
+                return objFrom;
+            }
+            if (!validTypes.Contains(objFrom.GetType()))
+            {
+                // FIXME: Users may want to use objects from mods as their sprinkler. Currently not possible.
+                Utils.Monitor.Log($"As of this time, {objFrom.Name} cannot be used as a sprinkler.\n" +
+                    $"Please contact the mod author of {Utils.Mod.ModManifest.Name} " +
+                    $"(or preferably submit a feature request on this projects github) " +
+                    $"if you would like this object to be supported", StardewModdingAPI.LogLevel.Warn);
+
+                return objFrom;
             }
 
+            // This following code was adapted from https://stackoverflow.com/questions/8631898/c-sharp-inheritance-derived-class-from-base-class.
             TObjTo objTo = new TObjTo();
-            foreach (FieldInfo fieldInf in t.GetFields())
+            foreach (FieldInfo fieldInf in tObject.GetFields())
             {
                 if (!(fieldInf.IsLiteral && !fieldInf.IsInitOnly))
                     fieldInf.SetValue(objTo, fieldInf.GetValue(objFrom));
             }
-            foreach (PropertyInfo propInf in t.GetProperties())
+            foreach (PropertyInfo propInf in tObject.GetProperties())
             {
                 if (propInf.CanWrite)
                     propInf.SetValue(objTo, propInf.GetValue(objFrom));
