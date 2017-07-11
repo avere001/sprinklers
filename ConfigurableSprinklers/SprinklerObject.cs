@@ -199,22 +199,19 @@ namespace ConfigurableSprinklers
         public override void DayUpdate(GameLocation location)
         {
 
-            if (!realSprinklerIds.Contains(parentSheetIndex))
+            if (realSprinklerIds.Contains(parentSheetIndex))
             {
-                // reset the health of this sprinkler
+                // reset the sprinklers health (from StardewValley.Object.DayUpdate(GameLocation))
                 health = 10;
             }
             else
             {
-                // This object is not traditionally a sprinkler. Call it's original DayUpdate, too.
-                // TODO: FIXME currently will break any object that is a subtype of SprinklerObject.
+                // This object is not an actual Stardew Valley sprinkler. Call it's original DayUpdate, too.
                 base.DayUpdate(location);
             }
 
-            // If the sprinkler is inside then rain can't water it, so water whether it is raining or not
-            // And if it's not raining, then we need to water it no matter what.
-            if (!Game1.isRaining || !location.isOutdoors)
-                
+            // don't bother watering if its raining (unless the sprinkler is indoors)
+            if (!(Game1.isRaining && location.isOutdoors))
             {
                 
                 foreach (Vector2 spotToWater in WaterTiles)
